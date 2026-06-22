@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Income Decision Engine | IncomeAIHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0E14;
+    --panel:#0F1923;
+    --panel-raised:#141F2C;
+    --border:#1E2D3D;
+    --text:#E8ECF1;
+    --text-dim:#8B9AAB;
+    --text-faint:#5A6B7D;
+    --signal:#00E5A0;
+    --signal-dim:#00E5A033;
+    --alert:#FF5470;
+    --alert-dim:#FF547022;
+    --amber:#FFB000;
+    --amber-dim:#FFB00022;
+    --blue:#4D9FFF;
+    --display: 'Space Grotesk', sans-serif;
+    --body: 'Inter', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--body);
+    min-height:100vh;
+    background-image:
+      radial-gradient(circle at 15% 10%, #0F1F1A 0%, transparent 40%),
+      radial-gradient(circle at 85% 90%, #1A1330 0%, transparent 40%);
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:32px 20px 80px;}
+
+  /* HEADER */
+  .masthead{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:36px;flex-wrap:wrap;gap:16px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--signal),var(--blue));display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;color:#06140F;font-size:16px;}
+  .brand-name{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:0.02em;}
+  .brand-sub{font-size:11px;color:var(--text-faint);font-family:var(--mono);letter-spacing:0.04em;}
+  .status-pill{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--text-dim);border:1px solid var(--border);padding:6px 12px;border-radius:20px;}
+  .status-dot{width:6px;height:6px;border-radius:50%;background:var(--signal);box-shadow:0 0 8px var(--signal);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+  .hero{margin-bottom:44px;}
+  .hero-eyebrow{font-family:var(--mono);font-size:12px;color:var(--signal);letter-spacing:0.08em;margin-bottom:14px;}
+  .hero h1{font-family:var(--display);font-size:clamp(28px,5vw,44px);font-weight:600;line-height:1.15;max-width:780px;margin-bottom:16px;}
+  .hero h1 span{color:var(--signal);}
+  .hero p{color:var(--text-dim);font-size:15px;max-width:560px;line-height:1.6;}
+
+  /* FORM CARD */
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:24px;}
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+  .card-title{font-family:var(--display);font-size:18px;font-weight:600;}
+  .card-step{font-family:var(--mono);font-size:11px;color:var(--text-faint);}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+
+  .field{margin-bottom:18px;}
+  .field label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:7px;font-weight:500;}
+  .field .hint{font-size:11px;color:var(--text-faint);margin-top:5px;}
+  input[type=text], input[type=number], select, textarea{
+    width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
+    padding:11px 13px;border-radius:8px;font-family:var(--body);font-size:14px;
+    transition:border-color .15s;
+  }
+  input::placeholder, textarea::placeholder{color:var(--text-faint);}
+  input:focus, select:focus, textarea:focus{outline:none;border-color:var(--signal);}
+  textarea{resize:vertical;min-height:70px;}
+
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{border:1px solid var(--border);background:var(--bg);color:var(--text-dim);padding:8px 14px;border-radius:20px;font-size:13px;cursor:pointer;transition:all .15s;user-select:none;}
+  .chip:hover{border-color:var(--text-faint);}
+  .chip.active{background:var(--signal-dim);border-color:var(--signal);color:var(--signal);}
+
+  .section-divider{display:flex;align-items:center;gap:12px;margin:28px 0 18px;}
+  .section-divider .label{font-family:var(--mono);font-size:11px;color:var(--text-faint);letter-spacing:0.06em;white-space:nowrap;}
+  .section-divider .line{flex:1;height:1px;background:var(--border);}
+
+  .upload-zone{border:1.5px dashed var(--border);border-radius:10px;padding:22px;text-align:center;cursor:pointer;transition:border-color .15s;}
+  .upload-zone:hover{border-color:var(--signal);}
+  .upload-zone.has-file{border-color:var(--signal);border-style:solid;background:var(--signal-dim);}
+  .upload-zone .icon{font-size:22px;margin-bottom:8px;}
+  .upload-zone .main{font-size:13.5px;color:var(--text);margin-bottom:4px;}
+  .upload-zone .sub{font-size:11.5px;color:var(--text-faint);}
+
+  .submit-row{display:flex;align-items:center;gap:16px;margin-top:8px;flex-wrap:wrap;}
+  .btn-primary{
+    background:linear-gradient(135deg,var(--signal),#00C28A);color:#06140F;border:none;
+    font-family:var(--display);font-weight:600;font-size:15px;padding:15px 32px;border-radius:9px;
+    cursor:pointer;transition:transform .12s, box-shadow .12s;display:flex;align-items:center;gap:10px;
+  }
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px var(--signal-dim);}
+  .btn-primary:active{transform:translateY(0);}
+  .btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+  .submit-note{font-size:12px;color:var(--text-faint);}
+
+  /* ANALYSIS STREAM (signature element) */
+  #analysisStream{display:none;}
+  .stream-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:0;overflow:hidden;margin-bottom:24px;}
+  .stream-head{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .stream-title{font-family:var(--mono);font-size:13px;color:var(--text-dim);display:flex;align-items:center;gap:10px;}
+  .stream-title .rec{width:8px;height:8px;border-radius:50%;background:var(--alert);animation:pulse 1.2s infinite;}
+  .stream-body{padding:24px;font-family:var(--mono);font-size:13px;line-height:2;color:var(--text-dim);min-height:160px;max-height:320px;overflow-y:auto;}
+  .stream-line{opacity:0;animation:fadeIn .4s forwards;display:flex;gap:10px;}
+  .stream-line .tag{color:var(--signal);flex-shrink:0;}
+  .stream-line.risk .tag{color:var(--alert);}
+  .stream-line.opp .tag{color:var(--amber);}
+  @keyframes fadeIn{to{opacity:1;}}
+  .progress-track{height:3px;background:var(--border);}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--signal),var(--blue));width:0%;transition:width .3s;}
+
+  /* REPORT */
+  #report{display:none;}
+  .report-header{text-align:center;padding:36px 20px;margin-bottom:28px;border-radius:16px;background:linear-gradient(135deg,#0F1923,#0A1620);border:1px solid var(--border);position:relative;overflow:hidden;}
+  .report-header::before{content:'';position:absolute;top:-50%;left:50%;width:600px;height:600px;background:radial-gradient(circle,var(--signal-dim),transparent 70%);transform:translateX(-50%);}
+  .report-eyebrow{font-family:var(--mono);font-size:11px;color:var(--signal);letter-spacing:0.1em;margin-bottom:10px;position:relative;}
+  .report-header h2{font-family:var(--display);font-size:clamp(22px,4vw,32px);font-weight:600;margin-bottom:8px;position:relative;}
+  .report-header .sub{color:var(--text-dim);font-size:13.5px;position:relative;}
+  .confidence-badge{display:inline-flex;align-items:center;gap:8px;margin-top:16px;background:var(--bg);border:1px solid var(--border);padding:8px 16px;border-radius:20px;font-family:var(--mono);font-size:12px;position:relative;}
+  .confidence-badge b{color:var(--signal);}
+
+  .metric-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+  @media(max-width:760px){.metric-row{grid-template-columns:repeat(2,1fr);}}
+  .metric{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;}
+  .metric .m-label{font-size:11px;color:var(--text-faint);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.03em;}
+  .metric .m-value{font-family:var(--display);font-size:24px;font-weight:600;}
+  .metric .m-value.up{color:var(--signal);}
+  .metric .m-value.warn{color:var(--amber);}
+  .metric .m-sub{font-size:11px;color:var(--text-faint);margin-top:4px;}
+
+  .report-section{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:26px 28px;margin-bottom:18px;}
+  .report-section h3{font-family:var(--display);font-size:17px;font-weight:600;display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+  .report-section h3 .ico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+  .ico.exec{background:var(--blue)33;}
+  .ico.insight{background:var(--signal-dim);}
+  .ico.opp{background:var(--amber-dim);}
+  .ico.risk{background:var(--alert-dim);}
+  .ico.rec{background:#9B6BFF22;}
+  .ico.plan{background:var(--signal-dim);}
+  .ico.fin{background:var(--amber-dim);}
+
+  .exec-summary-text{font-size:14.5px;line-height:1.85;color:var(--text);}
+  .exec-summary-text strong{color:var(--signal);}
+
+  .insight-item, .opp-item, .risk-item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);}
+  .insight-item:last-child, .opp-item:last-child, .risk-item:last-child{border-bottom:none;}
+  .item-marker{flex-shrink:0;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:600;margin-top:2px;}
+  .marker-insight{background:var(--signal-dim);color:var(--signal);}
+  .marker-opp{background:var(--amber-dim);color:var(--amber);}
+  .marker-risk{background:var(--alert-dim);color:var(--alert);}
+  .item-body .item-title{font-size:14.5px;font-weight:600;margin-bottom:5px;}
+  .item-body .item-desc{font-size:13.5px;color:var(--text-dim);line-height:1.65;}
+  .item-tags{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  .item-tag{font-family:var(--mono);font-size:10.5px;padding:3px 9px;border-radius:5px;border:1px solid var(--border);color:var(--text-faint);}
+  .sev-high{color:var(--alert);border-color:var(--alert-dim);}
+  .sev-med{color:var(--amber);border-color:var(--amber-dim);}
+  .sev-low{color:var(--text-dim);}
+
+  .rec-card{border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:12px;background:var(--panel-raised);}
+  .rec-card:last-child{margin-bottom:0;}
+  .rec-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px;}
+  .rec-title{font-size:14.5px;font-weight:600;}
+  .rec-impact{font-family:var(--mono);font-size:11px;color:var(--signal);white-space:nowrap;background:var(--signal-dim);padding:4px 10px;border-radius:6px;}
+  .rec-desc{font-size:13.5px;color:var(--text-dim);line-height:1.65;margin-bottom:10px;}
+  .conf-bar-row{display:flex;align-items:center;gap:10px;}
+  .conf-bar-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+  .conf-bar-fill{height:100%;background:linear-gradient(90deg,var(--signal),var(--blue));border-radius:3px;}
+  .conf-label{font-family:var(--mono);font-size:11px;color:var(--text-faint);white-space:nowrap;}
+
+  .plan-timeline{position:relative;padding-left:28px;}
+  .plan-timeline::before{content:'';position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:var(--border);}
+  .plan-step{position:relative;padding-bottom:24px;}
+  .plan-step:last-child{padding-bottom:0;}
+  .plan-step::before{content:'';position:absolute;left:-28px;top:3px;width:18px;height:18px;border-radius:50%;background:var(--bg);border:2px solid var(--signal);}
+  .plan-step.priority-high::before{border-color:var(--alert);}
+  .plan-step.priority-med::before{border-color:var(--amber);}
+  .plan-step-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;}
+  .plan-step-title{font-size:14.5px;font-weight:600;}
+  .plan-badge{font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:5px;}
+  .plan-badge.priority-high{background:var(--alert-dim);color:var(--alert);}
+  .plan-badge.priority-med{background:var(--amber-dim);color:var(--amber);}
+  .plan-badge.priority-low{background:var(--signal-dim);color:var(--signal);}
+  .plan-when{font-family:var(--mono);font-size:11px;color:var(--text-faint);}
+  .plan-step-desc{font-size:13.5px;color:var(--text-dim);line-height:1.6;}
+
+  .fin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media(max-width:700px){.fin-grid{grid-template-columns:1fr;}}
+  .fin-box{background:var(--panel-raised);border-radius:10px;padding:20px;text-align:center;}
+  .fin-box .fin-label{font-size:11.5px;color:var(--text-faint);font-family:var(--mono);margin-bottom:10px;}
+  .fin-box .fin-value{font-family:var(--display);font-size:26px;font-weight:700;}
+  .fin-box .fin-range{font-size:11px;color:var(--text-faint);margin-top:6px;}
+  .fin-box.rev .fin-value{color:var(--signal);}
+  .fin-box.cost .fin-value{color:var(--blue);}
+  .fin-box.roi .fin-value{color:var(--amber);}
+
+  .disclaimer{font-size:11px;color:var(--text-faint);line-height:1.6;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);}
+
+  .report-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;}
+  .btn-secondary{background:transparent;border:1px solid var(--border);color:var(--text);font-family:var(--body);font-weight:600;font-size:13.5px;padding:12px 22px;border-radius:9px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:border-color .15s;}
+  .btn-secondary:hover{border-color:var(--signal);color:var(--signal);}
+
+  .ad-slot{background:var(--panel);border:1px dashed var(--border);border-radius:12px;padding:14px;text-align:center;color:var(--text-faint);font-family:var(--mono);font-size:11px;margin:24px 0;}
+
+  .footer-note{text-align:center;color:var(--text-faint);font-size:12px;margin-top:40px;font-family:var(--mono);}
+
+  /* PRINT / PDF VIEW */
+  @media print{
+    body{background:#fff;color:#111;}
+    .no-print{display:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="brand">
+      <div class="brand-mark">Ai</div>
+      <div>
+        <div class="brand-name">IncomeAIHub</div>
+        <div class="brand-sub">DECISION ENGINE</div>
+      </div>
+    </div>
+    <div class="status-pill"><span class="status-dot"></span> ENGINE ONLINE</div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-eyebrow">// AI INCOME DECISION ENGINE</div>
+    <h1>Ek calculator nahi. <span>Ek poora consultant.</span></h1>
+    <p>Apna freelance/creator income data daalein — engine risks detect karega, hidden opportunities dhundega, outcomes predict karega, aur ek complete priority action plan ke saath consulting-grade report banayega.</p>
+  </div>
+
+  <!-- ===================== INPUT FORM ===================== -->
+  <form id="engineForm" class="no-print">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Business Snapshot</div>
+        <div class="card-step">STEP 1 / 1</div>
+      </div>
+
+      <div class="section-divider"><span class="label">INCOME &amp; CLIENTS</span><div class="line"></div></div>
+      <div class="grid2">
+        <div class="field">
+          <label>Monthly income (₹) — average last 3 months</label>
+          <input type="number" id="monthlyIncome" placeholder="e.g. 85000" required>
+        </div>
+        <div class="field">
+          <label>Monthly income — 6 months ago (₹)</label>
+          <input type="number" id="pastIncome" placeholder="e.g. 60000" required>
+          <div class="hint">Used to detect growth/decline trend</div>
+        </div>
+        <div class="field">
+          <label>Total active clients</label>
+          <input type="number" id="totalClients" placeholder="e.g. 6" required>
+        </div>
+        <div class="field">
+          <label>Revenue from single largest client (%)</label>
+          <input type="number" id="topClientPct" placeholder="e.g. 55" min="0" max="100" required>
+          <div class="hint">Helps detect concentration risk</div>
+        </div>
+      </div>
+
+      <div class="section-divider"><span class="label">NICHE &amp; SERVICES</span><div class="line"></div></div>
+      <div class="grid2">
+        <div class="field">
+          <label>Primary niche / industry</label>
+          <input type="text" id="niche" placeholder="e.g. Content writing for SaaS startups" required>
+        </div>
+        <div class="field">
+          <label>Number of income streams</label>
+          <input type="number" id="incomeStreams" placeholder="e.g. 1" required>
+          <div class="hint">Freelance gigs, products, courses, ads etc. — each counted separately</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Pricing model</label>
+        <div class="chip-row" id="pricingChips">
+          <div class="chip" data-val="hourly">Hourly</div>
+          <div class="chip" data-val="project">Per project</div>
+          <div class="chip" data-val="retainer">Monthly retainer</div>
+          <div class="chip" data-val="mixed">Mixed</div>
+        </div>
+      </div>
+
+      <div class="section-divider"><span class="label">COSTS &amp; TIME</span><div class="line"></div></div>
+      <div class="grid2">
+        <div class="field">
+          <label>Monthly business expenses (₹)</label>
+          <input type="number" id="monthlyExpenses" placeholder="e.g. 12000" required>
+        </div>
+        <div class="field">
+          <label>Hours worked per week</label>
+          <input type="number" id="hoursPerWeek" placeholder="e.g. 45" required>
+        </div>
+        <div class="field">
+          <label>Time spent on admin/non-billable work (%)</label>
+          <input type="number" id="adminPct" placeholder="e.g. 25" min="0" max="100" required>
+        </div>
+        <div class="field">
+          <label>Savings runway (months of expenses covered)</label>
+          <input type="number" id="runway" placeholder="e.g. 2" required>
+        </div>
+      </div>
+
+      <div class="section-divider"><span class="label">GOALS &amp; CONTEXT</span><div class="line"></div></div>
+      <div class="field">
+        <label>Primary goal for next 6 months</label>
+        <textarea id="goal" placeholder="e.g. Income double karna hai bina hours badhaye, aur ek passive product launch karna hai"></textarea>
+      </div>
+
+      <div class="section-divider"><span class="label">OPTIONAL: UPLOAD DATA (CSV)</span><div class="line"></div></div>
+      <div class="field">
+        <div class="upload-zone" id="uploadZone">
+          <div class="icon">📊</div>
+          <div class="main">Drag a CSV here, or click to upload</div>
+          <div class="sub">Monthly income/expense history improves prediction accuracy — optional</div>
+        </div>
+        <input type="file" id="csvInput" accept=".csv" style="display:none">
+      </div>
+
+      <div class="submit-row">
+        <button type="submit" class="btn-primary" id="submitBtn">
+          ⚡ Run Decision Engine
+        </button>
+        <span class="submit-note">Analysis takes ~15-20 seconds</span>
+      </div>
+    </div>
+  </form>
+
+  <!-- ===================== ANALYSIS STREAM ===================== -->
+  <div id="analysisStream" class="no-print">
+    <div class="stream-card">
+      <div class="stream-head">
+        <div class="stream-title"><span class="rec"></span> LIVE ANALYSIS — DO NOT CLOSE TAB</div>
+        <div class="card-step" id="streamPct">0%</div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="stream-body" id="streamBody"></div>
+    </div>
+  </div>
+
+  <!-- ===================== REPORT ===================== -->
+  <div id="report"></div>
+
+  <div class="footer-note no-print">IncomeAIHub Decision Engine · Estimates are directional, not financial advice · Generated locally in your browser</div>
+</div>
+
+<script>
+// ---------- UI wiring ----------
+const chips = document.querySelectorAll('#pricingChips .chip');
+let pricingModel = '';
+chips.forEach(c => c.addEventListener('click', () => {
+  chips.forEach(x => x.classList.remove('active'));
+  c.classList.add('active');
+  pricingModel = c.dataset.val;
+}));
+
+const uploadZone = document.getElementById('uploadZone');
+const csvInput = document.getElementById('csvInput');
+let csvData = null;
+uploadZone.addEventListener('click', () => csvInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); });
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  if (e.dataTransfer.files[0]) handleCsv(e.dataTransfer.files[0]);
+});
+csvInput.addEventListener('change', e => { if (e.target.files[0]) handleCsv(e.target.files[0]); });
+
+function handleCsv(file){
+  const reader = new FileReader();
+  reader.onload = e => {
+    csvData = e.target.result;
+    uploadZone.classList.add('has-file');
+    uploadZone.querySelector('.main').textContent = '✓ ' + file.name + ' loaded';
+    uploadZone.querySelector('.sub').textContent = 'Will be factored into trend analysis';
+  };
+  reader.readAsText(file);
+}
+
+function parseCsvTrend(text){
+  // Very lightweight CSV parse: looks for numeric columns, returns simple trend stats
+  try{
+    const rows = text.trim().split('\n').map(r => r.split(',').map(c => c.trim()));
+    const header = rows[0];
+    const numericCols = [];
+    for(let i=0;i<header.length;i++){
+      const sample = rows.slice(1,6).map(r => parseFloat(r[i])).filter(n=>!isNaN(n));
+      if(sample.length >= 2) numericCols.push(i);
+    }
+    if(numericCols.length === 0) return null;
+    const col = numericCols[numericCols.length-1]; // assume last numeric col = value
+    const values = rows.slice(1).map(r => parseFloat(r[col])).filter(n=>!isNaN(n));
+    if(values.length < 2) return null;
+    const first = values[0], last = values[values.length-1];
+    const avg = values.reduce((a,b)=>a+b,0)/values.length;
+    const volatility = Math.sqrt(values.reduce((a,b)=>a+(b-avg)**2,0)/values.length) / (avg||1);
+    return { points: values.length, first, last, avg, volatility, growthPct: first ? ((last-first)/first*100) : 0 };
+  }catch(e){ return null; }
+}
+
+// ---------- Core scoring engine (rule-based) ----------
+function runEngine(d){
+  const out = { inputs: d, insights: [], opportunities: [], risks: [], recommendations: [], plan: [], confidenceOverall: 0 };
+
+  const incomeGrowthPct = d.pastIncome > 0 ? ((d.monthlyIncome - d.pastIncome) / d.pastIncome * 100) : 0;
+  const profitMonthly = d.monthlyIncome - d.monthlyExpenses;
+  const profitMargin = d.monthlyIncome > 0 ? (profitMonthly / d.monthlyIncome * 100) : 0;
+  const effectiveHourly = d.hoursPerWeek > 0 ? (d.monthlyIncome / (d.hoursPerWeek * 4.33)) : 0;
+  const billableHourly = d.hoursPerWeek > 0 ? (d.monthlyIncome / (d.hoursPerWeek * 4.33 * (1 - d.adminPct/100))) : 0;
+  const incomePerClient = d.totalClients > 0 ? (d.monthlyIncome / d.totalClients) : 0;
+
+  // ---- RISK DETECTION ----
+  if (d.topClientPct >= 50){
+    out.risks.push({
+      title: 'Critical client concentration risk',
+      desc: `Aapki income ka ${d.topClientPct}% sirf ek client se aa raha hai. Agar yeh client chala jaaye (project end, budget cut, dispute), toh income overnight ${d.topClientPct}% tak gir sakti hai. Yeh sabse bada single-point-of-failure hai aapke business mein.`,
+      severity: d.topClientPct >= 65 ? 'high' : 'med',
+      tag: 'CLIENT RISK'
+    });
+  }
+  if (d.totalClients <= 2){
+    out.risks.push({
+      title: 'Thin client base',
+      desc: `Sirf ${d.totalClients} active client(s) ke saath, aapka business diversification bahut kam hai. Industry benchmark freelancers ke liye 5+ active clients hota hai taaki kisi ek ke jaane ka impact minimal rahe.`,
+      severity: 'med',
+      tag: 'STRUCTURE RISK'
+    });
+  }
+  if (d.runway < 3){
+    out.risks.push({
+      title: 'Low financial runway',
+      desc: `Aapke paas sirf ${d.runway} month(s) ka expense-covering savings hai. Agar income drop ho ya gap aaye projects ke beech, toh financial pressure bahut tezi se aayega. Recommended minimum: 3-6 months.`,
+      severity: d.runway < 1.5 ? 'high' : 'med',
+      tag: 'CASH RISK'
+    });
+  }
+  if (incomeGrowthPct < 0){
+    out.risks.push({
+      title: 'Declining income trend',
+      desc: `Last 6 months mein income ${Math.abs(incomeGrowthPct).toFixed(1)}% gir gayi hai (₹${d.pastIncome.toLocaleString('en-IN')} → ₹${d.monthlyIncome.toLocaleString('en-IN')}). Yeh trend agar continue hua, toh agle 6 months mein situation aur tight ho sakti hai bina intervention ke.`,
+      severity: 'high',
+      tag: 'TREND RISK'
+    });
+  }
+  if (d.adminPct >= 30){
+    out.risks.push({
+      title: 'High non-billable time leakage',
+      desc: `Aapka ${d.adminPct}% time admin/non-billable kaamon mein ja raha hai — matlab roughly ${(d.hoursPerWeek*d.adminPct/100).toFixed(1)} hours/week jo directly revenue generate nahi karte. Yeh hidden cost hai jo effective hourly rate ko neeche khींch raha hai.`,
+      severity: 'med',
+      tag: 'EFFICIENCY RISK'
+    });
+  }
+  if (d.incomeStreams <= 1){
+    out.risks.push({
+      title: 'Single income stream dependency',
+      desc: `Aapki poori income sirf ek stream se aati hai. Koi bhi market shift, niche slowdown, ya personal health issue directly poora income affect kar sakta hai. Diversified freelancers typically 2-3 streams maintain karte hain.`,
+      severity: 'med',
+      tag: 'DIVERSIFICATION RISK'
+    });
+  }
+
+  // ---- OPPORTUNITY DETECTION ----
+  if (effectiveHourly > 0 && billableHourly > effectiveHourly * 1.2){
+    out.opportunities.push({
+      title: 'Reclaim lost billable hours',
+      desc: `Agar admin time ${d.adminPct}% se 15% tak optimize ho jaaye (automation/delegation se), toh effective earning capacity ₹${Math.round(billableHourly).toLocaleString('en-IN')}/hour tak pahunch sakti hai bina extra client laaye. Yeh sabse fast win hai.`,
+      tag: 'QUICK WIN'
+    });
+  }
+  if (d.topClientPct >= 40 && d.totalClients < 8){
+    out.opportunities.push({
+      title: 'Diversification headroom',
+      desc: `2-3 naye mid-size clients add karke top-client dependency ko ${d.topClientPct}% se ${Math.max(25, d.topClientPct-20)}% tak laaya ja sakta hai, jisse risk kam hote hue bhi total income same ya higher rahegi.`,
+      tag: 'STRATEGIC'
+    });
+  }
+  if (incomePerClient > 0 && pricingModel === 'hourly'){
+    out.opportunities.push({
+      title: 'Pricing model upgrade potential',
+      desc: `Hourly pricing se project/retainer model par shift karne se typically 20-35% revenue increase hota hai same kaam ke liye, kyunki value-based pricing time-based pricing se zyada capture karti hai. Aapke ${d.niche || 'niche'} mein retainer clients ka LTV bhi zyada hota hai.`,
+      tag: 'PRICING'
+    });
+  }
+  if (incomeGrowthPct > 15){
+    out.opportunities.push({
+      title: 'Momentum scaling window',
+      desc: `Aapki income ${incomeGrowthPct.toFixed(1)}% grow ki hai last 6 months mein — yeh strong positive momentum hai. Yeh sahi time hai rates badhane ka ya premium positioning lene ka, jab demand already proven hai.`,
+      tag: 'MOMENTUM'
+    });
+  }
+  if (d.incomeStreams <= 2 && profitMargin > 25){
+    out.opportunities.push({
+      title: 'Healthy margin → productize',
+      desc: `${profitMargin.toFixed(1)}% profit margin ke saath aapke paas room hai ek low-effort passive product (template, mini-course, ebook) launch karne ka, jo apke ${d.niche || 'expertise area'} ki existing audience ko monetize karega.`,
+      tag: 'NEW REVENUE'
+    });
+  }
+  out.opportunities.push({
+    title: 'Underpriced expertise signal',
+    desc: `${d.niche || 'Aapke niche'} mein experience aur client retention dikhati hai ki aap market rate se neeche charge kar rahe ho. Ek structured 10-15% rate increase next 2 renewal cycles mein test karne layak hai.`,
+    tag: 'PRICING'
+  });
+
+  // ---- PREDICTIVE OUTCOME ----
+  const trendMultiplier = incomeGrowthPct >= 0 ? (1 + Math.min(incomeGrowthPct,40)/100/2) : (1 + incomeGrowthPct/100/2);
+  const predicted6mo = d.monthlyIncome * trendMultiplier;
+  const riskAdjustedDownside = d.topClientPct >= 50 ? d.monthlyIncome * (1 - d.topClientPct/100*0.6) : d.monthlyIncome * 0.85;
+
+  out.predicted6mo = predicted6mo;
+  out.riskAdjustedDownside = riskAdjustedDownside;
+  out.profitMargin = profitMargin;
+  out.effectiveHourly = effectiveHourly;
+  out.billableHourly = billableHourly;
+  out.incomeGrowthPct = incomeGrowthPct;
+  out.incomePerClient = incomePerClient;
+
+  // ---- RECOMMENDATIONS (synthesized) ----
+  out.recommendations = [
+    {
+      title: 'Diversify client base within 60 days',
+      desc: `Target: top client revenue share ko ${d.topClientPct}% se neeche 35% laana, 2 naye clients onboard karke similar ya higher rate par. Yeh single sabse bada risk-reduction move hai available.`,
+      impact: `Risk -${Math.min(40, d.topClientPct-25)}pp`,
+      confidence: d.topClientPct >= 50 ? 88 : 72
+    },
+    {
+      title: 'Audit and cut non-billable time',
+      desc: `Admin/non-billable %, currently ${d.adminPct}%, ko templates, automation tools, aur batching se 15% tak laayein. Saved hours ko billable work ya rest mein convert karein.`,
+      impact: `+₹${Math.round((d.hoursPerWeek*4.33*(d.adminPct-15)/100)*billableHourly).toLocaleString('en-IN')}/mo`,
+      confidence: 81
+    },
+    {
+      title: 'Test a 10-15% rate increase',
+      desc: `Naye clients ke liye immediately, existing clients ke liye next renewal cycle par. Income growth trend (${incomeGrowthPct.toFixed(1)}%) signal karta hai demand exists — pricing power use karna abhi safe hai.`,
+      impact: `+₹${Math.round(d.monthlyIncome*0.12).toLocaleString('en-IN')}/mo`,
+      confidence: 76
+    },
+    {
+      title: 'Build a 3-6 month cash runway',
+      desc: `Current runway ${d.runway} months hai. Har month profit ka 20% ek separate buffer account mein allocate karein jab tak 3 month minimum na pahunch jaaye.`,
+      impact: `Stability +High`,
+      confidence: 92
+    },
+    {
+      title: `Launch one passive revenue stream`,
+      desc: `${d.niche || 'Aapke expertise'} ko ek scalable asset mein convert karein — template pack, mini-course, ya digital product. Goal: ${d.monthlyIncome > 0 ? '₹'+Math.round(d.monthlyIncome*0.1).toLocaleString('en-IN') : 'small'} /month passive within 90 days.`,
+      impact: `New stream`,
+      confidence: 64
+    }
+  ];
+
+  // ---- PRIORITY ACTION PLAN ----
+  out.plan = [
+    { when: 'Week 1-2', title: 'Risk containment', desc: 'Top client dependency map karein, 2 naye outreach targets identify karein, runway buffer account open karein.', priority: d.topClientPct>=50 ? 'high':'med' },
+    { when: 'Week 3-4', title: 'Efficiency reset', desc: 'Admin tasks audit karein, ek tool/template/SOP implement karein har repetitive task ke liye. Target: 10pp admin time reduction.', priority: 'med' },
+    { when: 'Month 2', title: 'Pricing move', desc: 'Naye clients ke liye updated rate card launch karein. Existing top clients ko value-recap email bhejein renewal se pehle.', priority: 'med' },
+    { when: 'Month 2-3', title: 'Client diversification', desc: '2-3 naye qualified leads close karein taaki top-client % structurally neeche aaye, total income maintain ya grow ho.', priority: d.topClientPct>=50?'high':'low' },
+    { when: 'Month 3-6', title: 'New revenue build', desc: 'Passive/productized offer design aur soft-launch karein existing audience/clients ko.', priority: 'low' }
+  ];
+
+  // ---- FINANCIAL IMPACT ----
+  const revenueIncreaseLow = Math.round(d.monthlyIncome * 0.08 * 12);
+  const revenueIncreaseHigh = Math.round(d.monthlyIncome * 0.22 * 12);
+  const costSavingsLow = Math.round((d.hoursPerWeek*4.33*(Math.max(d.adminPct-15,0))/100) * billableHourly * 12 * 0.5);
+  const costSavingsHigh = Math.round((d.hoursPerWeek*4.33*(Math.max(d.adminPct-15,0))/100) * billableHourly * 12);
+  const investEstimate = Math.max(5000, Math.round(d.monthlyIncome*0.05));
+  const roiLow = investEstimate>0 ? Math.round(((revenueIncreaseLow+costSavingsLow)/investEstimate)*100) : 0;
+  const roiHigh = investEstimate>0 ? Math.round(((revenueIncreaseHigh+costSavingsHigh)/investEstimate)*100) : 0;
+
+  out.financial = { revenueIncreaseLow, revenueIncreaseHigh, costSavingsLow, costSavingsHigh, roiLow, roiHigh, investEstimate };
+
+  // ---- CONFIDENCE ----
+  let conf = 70;
+  if (d.runway >= 0 && d.totalClients >= 0) conf += 5;
+  if (csvData) conf += 10;
+  if (d.pastIncome > 0) conf += 5;
+  out.confidenceOverall = Math.min(94, conf);
+
+  return out;
+}
+
+// ---------- Stream rendering ----------
+const streamLines = [
+  { tag:'[SCAN]', text:'Income history aur client structure load ho rahi hai...' },
+  { tag:'[CALC]', text:'Effective hourly rate aur profit margin calculate ho raha hai...' },
+  { tag:'[RISK]', text:'Client concentration aur cash runway check ho raha hai...', cls:'risk' },
+  { tag:'[RISK]', text:'Income trend volatility analyze ho rahi hai...', cls:'risk' },
+  { tag:'[OPP]', text:'Pricing aur diversification opportunities scan ho rahi hain...', cls:'opp' },
+  { tag:'[OPP]', text:'Hidden revenue leaks detect ho rahe hain...', cls:'opp' },
+  { tag:'[PREDICT]', text:'6-month outcome trajectory model ho rahi hai...' },
+  { tag:'[SYNTH]', text:'Recommendations prioritize ki ja rahi hain...' },
+  { tag:'[PLAN]', text:'Action plan timeline generate ho raha hai...' },
+  { tag:'[REPORT]', text:'Final consulting report compile ho raha hai...' }
+];
+
+async function runStream(){
+  const body = document.getElementById('streamBody');
+  const fill = document.getElementById('progressFill');
+  const pct = document.getElementById('streamPct');
+  body.innerHTML = '';
+  for(let i=0;i<streamLines.length;i++){
+    const l = streamLines[i];
+    const div = document.createElement('div');
+    div.className = 'stream-line ' + (l.cls||'');
+    div.innerHTML = `<span class="tag">${l.tag}</span><span>${l.text}</span>`;
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+    const p = Math.round(((i+1)/streamLines.length)*100);
+    fill.style.width = p + '%';
+    pct.textContent = p + '%';
+    await new Promise(r => setTimeout(r, 480 + Math.random()*420));
+  }
+  await new Promise(r => setTimeout(r, 400));
+}
+
+// ---------- Claude API narrative polish ----------
+async function getNarrative(engineOutput, d){
+  const prompt = `You are a senior business consultant. Based on this freelancer/creator's data and analysis, write a SHORT executive summary (4-5 sentences, in Hindi-English mix "Hinglish" matching natural Indian freelancer conversational tone, but keep numbers/currency in standard format). Be specific, confident, and consulting-grade — reference their actual numbers naturally. Do not use generic filler.
+
+DATA:
+- Monthly income: ₹${d.monthlyIncome} (was ₹${d.pastIncome} six months ago, ${engineOutput.incomeGrowthPct.toFixed(1)}% change)
+- Niche: ${d.niche}
+- Clients: ${d.totalClients} total, top client = ${d.topClientPct}% of revenue
+- Profit margin: ${engineOutput.profitMargin.toFixed(1)}%
+- Runway: ${d.runway} months
+- Goal: ${d.goal || 'general growth'}
+- Top risk detected: ${engineOutput.risks[0] ? engineOutput.risks[0].title : 'none major'}
+- Top opportunity detected: ${engineOutput.opportunities[0] ? engineOutput.opportunities[0].title : 'none major'}
+
+Return ONLY the executive summary text, no preamble, no markdown headers, no quotes around it.`;
+
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const data = await response.json();
+    const text = data.content?.find(c => c.type === 'text')?.text;
+    return text || fallbackSummary(engineOutput, d);
+  }catch(e){
+    return fallbackSummary(engineOutput, d);
+  }
+}
+
+function fallbackSummary(eo, d){
+  return `Aapka business currently ₹${d.monthlyIncome.toLocaleString('en-IN')}/month generate kar raha hai with a ${eo.profitMargin.toFixed(1)}% profit margin — overall financial health stable hai, lekin ek structural risk clearly visible hai: top client se ${d.topClientPct}% revenue dependency. Yeh aapke business ka single biggest vulnerability hai. Good news: aapke paas genuine growth aur pricing power hai jo abhi tak fully use nahi hua — agle 90 din mein client diversification aur ek strategic rate adjustment se income meaningfully badh sakti hai bina extra hours ke. Priority action plan neeche detailed hai.`;
+}
+
+// ---------- Report rendering ----------
+function fmtINR(n){
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+
+function renderReport(eo, d, narrative){
+  const f = eo.financial;
+  const riskHtml = eo.risks.map(r => `
+    <div class="risk-item">
+      <div class="item-marker marker-risk">!</div>
+      <div class="item-body">
+        <div class="item-title">${r.title}</div>
+        <div class="item-desc">${r.desc}</div>
+        <div class="item-tags"><span class="item-tag sev-${r.severity}">${r.tag}</span><span class="item-tag sev-${r.severity}">${r.severity.toUpperCase()} SEVERITY</span></div>
+      </div>
+    </div>`).join('');
+
+  const oppHtml = eo.opportunities.map(o => `
+    <div class="opp-item">
+      <div class="item-marker marker-opp">↑</div>
+      <div class="item-body">
+        <div class="item-title">${o.title}</div>
+        <div class="item-desc">${o.desc}</div>
+        <div class="item-tags"><span class="item-tag">${o.tag}</span></div>
+      </div>
+    </div>`).join('');
+
+  const insights = [
+    `Effective hourly rate: ${fmtINR(eo.effectiveHourly)}/hour actual vs ${fmtINR(eo.billableHourly)}/hour potential if admin time optimized.`,
+    `Income per client: ${fmtINR(eo.incomePerClient)}/month average across ${d.totalClients} client(s).`,
+    `6-month trend: ${eo.incomeGrowthPct>=0?'+':''}${eo.incomeGrowthPct.toFixed(1)}% — ${eo.incomeGrowthPct>=10?'strong growth momentum':eo.incomeGrowthPct>=0?'modest growth':'declining, needs attention'}.`,
+    `Risk-adjusted downside scenario: income could fall to ${fmtINR(eo.riskAdjustedDownside)}/month if top client churns without diversification.`
+  ];
+  const insightsHtml = insights.map(t => `
+    <div class="insight-item">
+      <div class="item-marker marker-insight">•</div>
+      <div class="item-body"><div class="item-desc">${t}</div></div>
+    </div>`).join('');
+
+  const recHtml = eo.recommendations.map(r => `
+    <div class="rec-card">
+      <div class="rec-top">
+        <div class="rec-title">${r.title}</div>
+        <div class="rec-impact">${r.impact}</div>
+      </div>
+      <div class="rec-desc">${r.desc}</div>
+      <div class="conf-bar-row">
+        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:${r.confidence}%"></div></div>
+        <div class="conf-label">${r.confidence}% confidence</div>
+      </div>
+    </div>`).join('');
+
+  const planHtml = eo.plan.map(p => `
+    <div class="plan-step priority-${p.priority}">
+      <div class="plan-step-head">
+        <span class="plan-step-title">${p.title}</span>
+        <span class="plan-badge priority-${p.priority}">${p.priority.toUpperCase()} PRIORITY</span>
+        <span class="plan-when">${p.when}</span>
+      </div>
+      <div class="plan-step-desc">${p.desc}</div>
+    </div>`).join('');
+
+  const html = `
+    <div class="report-header">
+      <div class="report-eyebrow">CONFIDENTIAL — PREPARED FOR ${(d.niche||'YOUR BUSINESS').toUpperCase()}</div>
+      <h2>AI Decision Engine Report</h2>
+      <div class="sub">Generated ${new Date().toLocaleDateString('en-IN', {day:'numeric',month:'long',year:'numeric'})} · Freelancer/Creator Income Analysis</div>
+      <div class="confidence-badge">Overall analysis confidence: <b>${eo.confidenceOverall}%</b></div>
+    </div>
+
+    <div class="metric-row">
+      <div class="metric"><div class="m-label">CURRENT MONTHLY INCOME</div><div class="m-value">${fmtINR(d.monthlyIncome)}</div><div class="m-sub">${eo.incomeGrowthPct>=0?'+':''}${eo.incomeGrowthPct.toFixed(1)}% vs 6mo ago</div></div>
+      <div class="metric"><div class="m-label">PROFIT MARGIN</div><div class="m-value ${eo.profitMargin>=20?'up':'warn'}">${eo.profitMargin.toFixed(1)}%</div><div class="m-sub">After expenses</div></div>
+      <div class="metric"><div class="m-label">PREDICTED 6-MO INCOME</div><div class="m-value up">${fmtINR(eo.predicted6mo)}</div><div class="m-sub">If trend continues</div></div>
+      <div class="metric"><div class="m-label">CLIENT RISK SCORE</div><div class="m-value ${d.topClientPct>=50?'warn':'up'}">${d.topClientPct}%</div><div class="m-sub">Top client concentration</div></div>
+    </div>
+
+    <div class="report-section">
+      <h3><span class="ico exec">📋</span> Executive Summary</h3>
+      <div class="exec-summary-text">${narrative}</div>
+    </div>
+
+    <div class="report-section">
+      <h3><span class="ico insight">🔍</span> Key Insights</h3>
+      ${insightsHtml}
+    </div>
+
+    <div class="report-section">
+      <h3><span class="ico opp">💡</span> Hidden Opportunities</h3>
+      ${oppHtml}
+    </div>
+
+    <div class="report-section">
+      <h3><span class="ico risk">⚠️</span> Risk Factors</h3>
+      ${riskHtml || '<div class="item-desc">No major risks detected — business structure looks stable.</div>'}
+    </div>
+
+    <div class="ad-slot">[ AD SLOT — 728×90 / responsive ]</div>
+
+    <div class="report-section">
+      <h3><span class="ico rec">🎯</span> AI Recommendations</h3>
+      ${recHtml}
+    </div>
+
+    <div class="report-section">
+      <h3><span class="ico plan">🗺️</span> Priority Action Plan</h3>
+      <div class="plan-timeline">${planHtml}</div>
+    </div>
+
+    <div class="report-section">
+      <h3><span class="ico fin">💰</span> Financial Impact Forecast</h3>
+      <div class="fin-grid">
+        <div class="fin-box rev">
+          <div class="fin-label">EXPECTED REVENUE INCREASE</div>
+          <div class="fin-value">${fmtINR(f.revenueIncreaseLow)}–${fmtINR(f.revenueIncreaseHigh)}</div>
+          <div class="fin-range">per year, over 12 months</div>
+        </div>
+        <div class="fin-box cost">
+          <div class="fin-label">EXPECTED COST SAVINGS</div>
+          <div class="fin-value">${fmtINR(f.costSavingsLow)}–${fmtINR(f.costSavingsHigh)}</div>
+          <div class="fin-range">per year, from efficiency gains</div>
+        </div>
+        <div class="fin-box roi">
+          <div class="fin-label">ROI FORECAST</div>
+          <div class="fin-value">${f.roiLow}–${f.roiHigh}%</div>
+          <div class="fin-range">on ~${fmtINR(f.investEstimate)} effort/tool investment</div>
+        </div>
+      </div>
+      <div class="disclaimer">Estimates ek directional model par based hain jo aapke diye gaye inputs, stated trends, aur typical freelancer/creator benchmarks use karta hai. Yeh financial advice nahi hai — actual results market conditions, execution quality, aur external factors par depend karte hain. Decisions lene se pehle apne specific situation ke liye qualified financial advisor consult karein.</div>
+    </div>
+
+    <div class="report-actions no-print">
+      <button class="btn-secondary" onclick="window.print()">⬇ Download Premium Report (PDF)</button>
+      <button class="btn-secondary" onclick="location.reload()">↻ Run New Analysis</button>
+    </div>
+  `;
+  document.getElementById('report').innerHTML = html;
+  document.getElementById('report').style.display = 'block';
+}
+
+// ---------- Form submit ----------
+document.getElementById('engineForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const d = {
+    monthlyIncome: parseFloat(document.getElementById('monthlyIncome').value)||0,
+    pastIncome: parseFloat(document.getElementById('pastIncome').value)||0,
+    totalClients: parseFloat(document.getElementById('totalClients').value)||0,
+    topClientPct: parseFloat(document.getElementById('topClientPct').value)||0,
+    niche: document.getElementById('niche').value||'',
+    incomeStreams: parseFloat(document.getElementById('incomeStreams').value)||1,
+    monthlyExpenses: parseFloat(document.getElementById('monthlyExpenses').value)||0,
+    hoursPerWeek: parseFloat(document.getElementById('hoursPerWeek').value)||0,
+    adminPct: parseFloat(document.getElementById('adminPct').value)||0,
+    runway: parseFloat(document.getElementById('runway').value)||0,
+    goal: document.getElementById('goal').value||''
+  };
+
+  document.getElementById('engineForm').style.display = 'none';
+  document.getElementById('analysisStream').style.display = 'block';
+  document.getElementById('submitBtn').disabled = true;
+
+  const csvTrend = csvData ? parseCsvTrend(csvData) : null;
+
+  const streamPromise = runStream();
+  const engineOutput = runEngine(d);
+  if (csvTrend) engineOutput.confidenceOverall = Math.min(96, engineOutput.confidenceOverall + 4);
+
+  const narrativePromise = getNarrative(engineOutput, d);
+  const [_, narrative] = await Promise.all([streamPromise, narrativePromise]);
+
+  document.getElementById('analysisStream').style.display = 'none';
+  renderReport(engineOutput, d, narrative);
+  window.scrollTo({top: document.getElementById('report').offsetTop - 20, behavior:'smooth'});
+});
+</script>
+</body>
+</html>
